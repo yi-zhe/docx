@@ -1,0 +1,62 @@
+Redis使用的是客户端-服务器模型的TCP服务器, 这就意味着一个请求是分两步完成的
+1. 客户端向服务器发起请求, 然后等待服务器的响应
+2. 服务器处理客户端的请求, 然后把结果返回给客户端
+
+RTT(Round Trip Time): 指数据包从客户端到服务器再从服务器返回客户端的时间.
+
+如果RTT比较大, 比如250ms, 那么不论服务器有多快的处理速度, 客户端在1秒钟内
+最多只能发起四次请求.
+
+使用Redis的Pipeline技术可以解决上面的问题
+
+Pipeline的想法是: 客户端向服务器发起多个命令, 而不等待各个命令的返回, 等服务器
+处理所有命令后, 一并把处理结果返回给客户端, 通过减少RTT来加快命令的执行.
+
+注意: 如果客户端使用pipeline技术向服务端发送命令, 那么服务器被迫缓存处理结果,
+但是这是要消耗内存的, 所以如果有大量的命令通过pipeline发送, 那么最好将这些命令
+分批次发给服务器, 每个批次发送合理数量的请求, 处理速度不会有太大的差别, 但是
+用户缓存结果的内存消耗不会太多.
+
+以下PHP代码是对比是否使用pipeline的差异.(ping服务器100000次)
+
+<?php
+
+    function pingWithoutPipeline($count) {
+        $redis = new Redis();
+        $redis->connect('127.0.0.1', 6379);
+
+        $start = microtime(true);
+        for($i = 0; $i < $count; $i++) {
+            $redis->ping();
+        }
+
+        echo "Ping " . $count . " times not using pipeline :" . (microtime(true) - $start)."\n";
+    }
+
+    function pingWithPipeline($count) {
+        $redis = new Redis();
+        $redis->connect('127.0.0.1', 6379);
+
+        $pipe = $redis->pipeline();
+        $start = microtime(true);
+        for($i = 0; $i < $count; $i++) {
+            $pipe->ping();
+        }
+
+        $pipe->exec();
+        echo "Ping " . $count . " times using pipeline :" . (microtime(true) - $start) . "\n";
+    }
+
+    pingWithoutPipeline(100000);
+    pingWithPipeline(100000);
+
+
+[root@localhost ~]# /usr/local/app/php/bin/php pipeline.php
+Ping 100000 times not using pipeline :7.1648449897766
+Ping 100000 times using pipeline :0.14492201805115
+
+
+Pipeline与脚本的对比
+
+脚本的优势是, 对于读写的延时都很小, 使得读写和计算都能以非常快的速度进行, 而pipeline则对此
+无能为力, 因为客户端需要根据返回结果来发起另一次请求.
