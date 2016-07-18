@@ -1,0 +1,35 @@
+发布与订阅模型
+
+发送者不是将信息直接发送给特定的接收者, 而是将信息发送给频道, 然后由
+频道将信息转发给所有对这个频道感兴趣的订阅者.
+
+订阅频道
+SUBSCRIBE channel1 channel2
+已经订阅频道的客户端不应该发送除SUBSCRIBE和UNSUBSCRIBE之外的其他命令
+
+SUBSCRIBE和UNSUBSCRIBE的返回值的格式
+
+(subscribe, channel, subscribedChannelCount)
+(unsubscribe, channel, subscribedChannelCount)
+(message, channel, messageContent)
+
+第一个返回值是操作的类型
+第二个返回值是频道
+第三个返回值对于SUBSCRIBE和UNSUBSCRIBE是该客户端订阅的频道数目,
+对于message是消息的实际内容
+
+订阅模式
+PSUBSCRIBE pattern
+客户端订阅的模式里面可以包含多个 glob 风格的通配符, 比如 * 、 ? 和 [...] , 等等,
+注意"."不是通配符
+
+PSUBSCRIBE和PUNSUBSCRIBE的返回值的格式
+
+(psubscribe, pattern, psubscribedChannelCount)
+(punsubscribe, pattern, psubscribedChannelCount)
+(pmessage, pattern, matched_pattern pmessageContent)
+
+第一个返回值是操作的类型
+第二个返回值是模式
+第三个返回值对于SUBSCRIBE和UNSUBSCRIBE是该客户端订阅的频道数目,
+对于message地三个参数是实际匹配pattern的字符串, 第四个参数是消息的实际内容
