@@ -1,0 +1,41 @@
+http://www.redis.io/topics/memory-optimization
+
+1. 对于小的聚合数据类型(Hash, List, Set, Sorted Set)使用特殊编码
+   hash-max-zipmap-entries 512 (hash-max-ziplist-entries for Redis >= 2.6)
+   hash-max-zipmap-value 64  (hash-max-ziplist-value for Redis >= 2.6)
+   list-max-ziplist-entries 512
+   list-max-ziplist-value 64
+   zset-max-ziplist-entries 128
+   zset-max-ziplist-value 64
+   set-max-intset-entries 512
+
+2. 编译时指定为32位
+   指针变小了,  但是32位的Redis实例只能使用4G的内存, (RDB和AOF文件可以通用)
+
+3. 使用位级操作
+   GETRANGE SETRANGE GETBIT SETBIT
+   通过这些命令可以把Redis的String当作随机存储的数组
+
+4. 多使用Hash
+   user1->name   -- name
+        ->email  -- email
+        ->passwd -- passwd
+        ...
+
+    对于少量的values, Redis使用的是线性表O(N)实现的, 因为数据量很少, 所以速度上并不慢.
+    而且线性表能够充分利用CPU的缓存(局部性原理)
+
+Redis内存分配
+
+1. 当key被删除后, 其占用的内存也不会立即返回给操作系统(大部分malloc()都是这样实现的)
+   虽然如此, 但增加key之后RSS(Resident Set Size)不会继续增大, 因为分配器会复用刚刚
+   (逻辑上)释放了的空间.
+
+2. 保证内存能够满足峰值内存需要的大小, 如果系统负载只有很少的时间需要10G内存, 而大部分时间
+   只需要5G, 那也需要准备10G内存
+
+3. 当内存使用峰值比正常值大很多的时候, 内存碎片率就不太准确了.
+
+如果没有设置maxmemory, 那么如果有需要, Redis就会持续分配内存指定耗尽所有可用内存.
+所以一般上建议设置一个最大的内存使用值, 同时设置maxmemory-policy为noeviction
+这样Redis会对有写请求的命令返回内存不足错误, 而不会让机器由于内存耗尽而down掉.
