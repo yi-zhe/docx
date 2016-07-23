@@ -1,0 +1,59 @@
+1. 使用Luke协议
+    使用传统的客户端软件进行大批量插入不好的原因如下
+    1. 每一条命令都会产生RTT(round trip time)
+    2. 尽管可以使用pipeline, 很少有客户端是non-blocking IO, 并且并非所有的客户端
+       都能高效地处理返回
+
+    解决方案是根据Redis协议生成文本文件, 使用原始格式.
+
+2. 通过netcat可以完成这个任务
+   (cat data.txt; sleep 10) | nc ip port > /dev/null
+   但是nc无法检测数据是否传送完毕, 也不能进行错误检查
+
+3. Redis 2.6之后, redis-cli支持pipe模式, 为了批量插入而设计的
+   cat data.txt | redis-cli --pipe
+
+4. Luke协议
+
+   将一条命令使用空格和制表符拆分, 
+   命令的总长度为单词的个数, 使用*表示
+   每个单词的长度用$表示, 后面跟单词
+   没行之间使用\r\n分割
+
+   set mykey myvalue
+   的Luke表示为
+   *3
+   $3
+   set
+   $5
+   mykey
+   $7
+   myvalue
+
+   *3(set mykey myvalue共三个单词)
+   $3(set的字符数)
+   set
+   $5(mykey的字符数)
+   mykey
+   $7(myvalue的字符数)
+   myvalue
+
+
+   php中将命令转为Luke协议的方法
+
+   function converter($cmd) {
+        $terminator="\r\n";
+        $result = '';
+        $words = preg_split("/[ \t]+/",$cmd);
+        // 命令中所有单词的个数, 即命令的长度
+        $result .= "*".sizeof($words).$terminator;
+        for($i = 0; $i < sizeof($words); $i++) {
+            // 命令中每个单词的长度
+            $result .= "$".strlen($words[$i]).$terminator;
+            // 命令中每个单词的实际值
+            $result .= $words[$i].$terminator;
+        }
+        return $result;
+    }
+
+5. 回复部分参见http://doc.redisfans.com/topic/protocol.html
