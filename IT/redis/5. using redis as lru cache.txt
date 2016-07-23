@@ -1,0 +1,37 @@
+
+1. 64bit
+   maxmemory 0 unlimited
+   32bit
+   maxmemory 0 3GB
+
+
+2. maxmemory-policy
+
+   noeviction
+       当最大内存已经达到时, 如果还有消耗内存的操作, 直接返回错误
+   allkeys-lru
+       当最大内存已经达到时, 如果还有消耗内存的操作, 在所有key中寻找最近最少使用的key, 淘汰掉
+   volatile-lru
+       当最大内存已经达到时, 如果还有消耗内存的操作, 在所有设置了过期时间的key中寻找最近最少使用的key, 淘汰掉
+   allkeys-random
+       当最大内存已经达到时, 如果还有消耗内存的操作, 在所有key中随机淘汰一些key
+   volatile-random
+       当最大内存已经达到时, 如果还有消耗内存的操作, 在所有设置了过期时间的key中随机淘汰掉一些key
+   volatile-ttl
+       当最大内存已经达到时, 如果还有消耗内存的操作, 从设置了过期时间的key中最快要过期的key中淘汰一些
+
+3. 不同淘汰策略的使用场景
+   allkeys-lru
+       访问的key的概率成指数分布, 也就是说大部分的请求只请求一小部分的key
+   allkeys-random
+       对所有key的访问呈现顺序的环形, 或者所有key的访问概率大致一样
+   volatile-ttl
+       如果想根据过期时间来进行淘汰
+
+   volatile-lru和volatile-random适合一个实例中既有缓存又有一部分持久化的key时, 但强烈建议使用两个实例
+
+
+4. 近似的LRU算法
+   会对一定的key进行取样, 然后找出其中最符合淘汰策略的key, 然后删除
+   maxmemory-samples 取样中key的个数(3.0之后支持)
+
