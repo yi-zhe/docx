@@ -1,0 +1,75 @@
+﻿1. Connecting and disconnecting from the server
+
+mysql [-h host] -u user [-P port] [-p] [dbname]
+
+2. Entering Queries
+
+   semicolon ";"
+
+   Prompt                      Meaning
+   mysql>             Ready for new command.
+    ->          Waiting for next line of multiple-line command.
+    '>          Waiting for next line, waiting for completion of a string that began with a single quote ("'").
+    ">          Waiting for next line, waiting for completion of a string that began with a double quote (""").
+    `>          Waiting for next line, waiting for completion of an identifier that began with a backtick ("`").
+   /*>          Waiting for next line, waiting for completion of a comment that began with /*.
+
+3. Creating and Using a Database
+   显示数据库
+   1. show databases;
+   选择数据库
+   2. use test;
+   给数据库用户授权(GRANT语法需要进一步看)
+   3. GRANT ALL ON menagerie.* TO 'your_mysql_name'@'your_client_host';
+
+   4. show tables;
+   5. describe tablename;
+
+   6. 将文本按格式写出来, 必须使用TAB做为分隔符 使用\N代表NULL值, 使用load语法加载到数据库
+      Unix like
+      LOAD DATA LOCAL INFILE '/root/pets.txt' INTO TABLE pet;
+      Windows
+      LOAD DATA LOCAL INFILE '/path/pet.txt' INTO TABLE pet LINES TERMINATED BY '\r\n';
+      MacOS
+      LOAD DATA LOCAL INFILE '/path/pet.txt' INTO TABLE pet LINES TERMINATED BY '\r';
+
+   7. 时间相关
+      使用timestampdiff函数计算时间
+      select name, birth, curdate(), timestampdiff(YEAR,birth,curdate()) as age from pet;
+      使用month函数计算月份(生日在几月份)
+      select name, birth, month(birth) from pet;
+      生日在下个月的宠物
+      SELECT name, birth FROM pet WHERE MONTH(birth) = MONTH(DATE_ADD(CURDATE(),INTERVAL 1 MONTH));
+
+   8. NULL值
+      只能使用 IS NULL, IS NOT NULL进行比较
+      不能使用 =, <, >, <>
+
+   9. MySQL的正则表达式
+      LIKE, NOT LIKE
+      _ 匹配任意一个字符
+      % 匹配任意多个字符
+
+      REGEXP, REGEXP BINARY(case sensitive)
+
+
+  10. 表的信息
+      SHOW INDEX FROM tablename;
+
+
+  11. MySQL批处理
+      /usr/bin/mysql < batch-file
+      或者在windows上由于特殊字符的原因
+      mysql -e "source batch-file"
+
+      在出错的情况下 使用--force选项可以继续执行接下来的语句
+      在批处理模式下
+      使用-t选择会输出和交互式的输出相同的格式
+      使用-vvv选项会将结果输出到标准输出
+
+      在mysql客户端可以使用 source 或者 \. 执行脚本
+
+
+  12. MySQL中的用户自定义变量
+      SELECT @min_price:=MIN(price),@max_price:=MAX(price) FROM shop;
+      SELECT * FROM shop WHERE price=@min_price OR price=@max_price
