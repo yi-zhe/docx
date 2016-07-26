@@ -1,0 +1,46 @@
+
+5. mysql 选项
+   --auto-rehash            自动补全
+
+   --auto-vertical-output   
+   如果列过多, 会自动开启\G模式
+
+   --batch/-B                 
+   批处理模式, 指定输入文件和输出文件(结果将用tab做默认分割)
+   /usr/local/app/mysql/bin/mysql -h127.0.0.1 -uroot -B app < batch.sql > a.out
+
+   * --binary-mode            
+   阻止mysql把\r\n转为\n, 组织mysql将\0解释为语句的终止符, 使用mysqlbinlog处理BLOB数据时使用
+
+   --bind-address=ip_addr     
+   指定连接mysql server的网卡
+
+   --character-sets-dir=path  
+   字符集安装的路径
+
+   * --column-names           
+   在结果中显示列名(不懂)
+
+   * --column-type-info/-m    
+   显示结果集的元数据(不懂)
+
+   --comments/-c              
+   保持发到服务器的注释
+
+   --compress/-C              
+   客户端与服务期间传递的数据压缩处理
+
+   --connect-expired-password  
+   (不懂)
+
+   --database=db_name/-D db_name
+   指定要使用的数据库
+
+   --debug
+   调试信息
+
+   --debug-check
+   程序退出时打印一些调试信息
+
+   --debug-info, -T
+   程序退出时打印调试信息, 内存及CPU统计信息
