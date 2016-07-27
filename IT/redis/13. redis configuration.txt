@@ -1,0 +1,24 @@
+Redis的配置
+    1. 可以不指定配置文件而允许Redis, 但只建议用于测试和开发环境
+
+    2. 通常指定redis.conf配置文件
+
+       格式如下
+       keyword arg1 arg2 ... argN
+
+       slaveof 127.0.0.1 6380
+
+       参数中也可以包含空格但需要使用引号引起来
+       requirepass "hello world"
+
+    3. 也可以通过命令行参数传递配置参数
+       和配置文件相比只是keyword前要加上--
+       如 redis-server --port 6380 --slaveof 127.0.0.1 6379
+
+    4. 当服务器在运行时修改配置参数
+       使用CONFIG SET命令(但并不影响配置文件的值)
+       从Redis2.8开始可以使用CONFIG REWRITE更新配置文件里的值
+
+    5. 把Redis配置为缓存
+       maxmemory 配置为2的指数大小
+       maxmemory-policy allkeys-lru
