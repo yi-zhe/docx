@@ -44,3 +44,61 @@
 
    --debug-info, -T
    程序退出时打印调试信息, 内存及CPU统计信息
+
+   --default-auth=plugin
+   指明客户端验证插件
+
+   --default-character-set=charset_name
+   指定客户端和连接使用的字符集
+
+   * --defaults-extra-file=file_name
+   指定选项文件, 优先级高于全局选项文件, 但低于用户选项文件, 实例级别的选项文件
+
+   --defaults-file=file_name
+   只使用给定的选项文件
+
+   --defaults-group-suffix=str
+   mysql一般只读取client和mysql组的配置, 如果使用--defaults-group-suffix=_other
+   那么也会读取client_other和mysql_other组的配置
+
+   --delimiter=str
+   设置命令终止符, 默认是分号
+
+
+    --disable-named-commands
+    不懂
+
+    --enable-cleartext-plugin
+    不懂
+
+    --execute=statement, -e statement
+    执行语句后退出
+    /usr/local/app/mysql/bin/mysql -h127.0.0.1 -uroot app --execute='select * from user';
+
+    --force, -f
+    忽略SQL错误, 继续执行
+
+    --histignore
+    影响写入到历史文件中的和登录相关的语句
+
+    --host=host_name, -h host_name
+    指定MySQL Server主机名
+
+    --html, -H
+    输出为html
+    /usr/local/app/mysql/bin/mysql -h127.0.0.1 -uroot app --execute='select * from user;' --html
+
+    --ignore-spaces, -i
+    忽略函数名后的空格(参见5.1.7 Server SQL Modes)
+
+    --init-command=str
+    登录后执行的一条sql
+    /usr/local/app/mysql/bin/mysql -h127.0.0.1 -uroot --init-command='use app';
+
+    --line-numbers
+    对于错误打印行号
+
+    --local-infile[={0|1}]
+    是否启用加载本地数据
+
+    
