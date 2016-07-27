@@ -1,0 +1,107 @@
+1. 模式
+   1. 交互式
+   2. 非交互式
+
+非交互式
+   1. redis-cli incr mycounter
+      如果检测到输出是tty那么会带上数据类型, 如果重定向到文件里, 就会省略(integer)
+      redis-cli incr mycounter > /tmp/output.txt
+      cat /tmp/output.txt
+      也可以指定使用原始格式输出
+      redis-cli incr mycounter --raw
+      或者使用如下强制写到文件的内容包含数据类型
+      redis-cli incr mycounter --no-raw > /tmp/output.txt
+
+   2. redis-cli -h host -p port
+      指定主机和端口
+
+   3. redis-cli -a pass
+      需要鉴权参数通过-a指定
+
+   4. 通过-n参数指定操作的数据库
+      redis-cli -n 1
+   5. -x 从其他程序获得输入
+      redis-cli -p 2228 -x set foo < a.txt
+
+   6. 将脚本写入文件
+      cat /tmp/commands.txt
+      set foo 100
+      incr foo
+      append foo xxx
+      get foo
+
+      cat /tmp/commands | redis-cli -p 2228
+
+   7. 多次执行重复的命令, 指定时间间隔
+      redis-cli -r 5 incr foo
+      redis-cli -r 5 -i 1 incr foo
+      一直不停的发下去
+      redis-cli -r -1 -i 1 incr foo
+
+   8. CSV(Comma separated values) 输出
+      redis-cli -p 2228  lrange mylist 0 -1
+
+   9. 使用lua脚本
+      redis-cli --eval /tmp/script.lua foo , bar
+
+交互式模式
+  
+   1. connect host port 连接到另一个redis实例
+   2. 重新连接后redis-cli会自动重新选择之前的数据库, 但连接状态比如事务的状态都丢失了
+   3. redis-cli支持历史命令, 通过上下方向键
+      默认的历史命令文件是~/.rediscli_history
+      也可通过REDISCLI_HISTFILE环境变量指定默认的历史文件
+      指定REDISCLI_HISTFILE为/dev/null则禁用了历史文件
+   4. 重复执行多次命令
+      127.0.0.1:6379> 5 incr mycounter
+   5. 帮助
+      help @<category> 
+          @generic, @list, @set, @sorted_set, @hash, @pubsub, @transactions, @connection, @server, @scripting, @hyperloglog
+
+      help command
+
+
+特殊模式的操作
+
+   1. 持续监控信息 -i 指定统计间隔时间
+      redis-cli --stat
+
+   2. 统计数据库的键空间的组成
+      redis-cli --bigkeys
+
+   3. 查看redis键空间(不会阻塞服务器)
+      redis-cli --scan
+      如果指定key的模式 增加参数 --pattern 'pattern'
+   
+   4. 监控命令
+      redis-cli monitor
+
+   5. 监控延迟
+      redis-cli --latency
+
+   6. 监控系统时钟延迟
+      redis-cli --intrinsic-latency 5
+
+   7. 远程备份rdb文件
+      redis-cli --rdb /tmp/dump.rdb
+
+   8. slave模式
+      redis-cli --slave 很好的调试工具, 发现master向slave发送了什么
+
+   9. --lru-test没支持啊
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
