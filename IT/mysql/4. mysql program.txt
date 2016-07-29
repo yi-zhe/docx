@@ -101,4 +101,82 @@
     --local-infile[={0|1}]
     是否启用加载本地数据
 
+    --login-path=name
+    使用mysql_config_editor创建的登录信息
+    生成登录文件
+    /usr/local/app/mysql/bin/mysql_config_editor set --login-path=test --user=root --host=127.0.0.1
+
+    使用登录文件登录
+    /usr/local/app/mysql/bin/mysql --login-path=test
+
+    --named-commands, -G
+    支持长格式命令
+
+    --no-auto-rehash, -A
+    不支持自动补全
+
+    --no-beep, -b
+    出错时不发出声响
+
+    --no-defaults
+    不读取任何选项文件
+
+    --one-database, -o
+    当前数据库必须是命令行里指定的数据库才可以执行sql
+
+    --pager[=command]
+    输出的默认分页器(less/more/cat)
+
+    --password[=password], -p[password]
+    登录MySQL server的密码
+
+    --plugin-dir=path
+    指定插件目录
+
+    --port=port_num, -P port_num
+    登录MySQL server的端口
+
+
+    --print-defaults
+    打印从选项文件中读取的选项
+
+
+    --prompt=format_str
+    设置提示符
+
+    --protocol={TCP|SOCKET|PIPE|MEMORY}
+    连接MySQL server的协议
+
+    --quick, -q
+    不缓存查询结果
+
+    --raw, -r
+    换行等转义
+
+    --reconnect
+    与服务器连接丢失时自动重连
+
+    --safe-updates, --i-am-a-dummy, -U
+    只允许指定条件的删除和更新
+    /usr/local/app/mysql/bin/mysql --login-path=test --safe-updates
+
+    --secure-auth
+    安全连接(默认打开的)
+
+    --server-public-key-path=file_name
+    指定服务器端公钥
+
+    --show-warnings
+    显示警告
+
+    --sigint-ignore
+    忽略CTRL+C
+
+    --silent, -s
+    减少输出, 如果指定多次, 输出会越来越少
+
     
+
+
+
+
