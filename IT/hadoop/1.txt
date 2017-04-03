@@ -1,0 +1,44 @@
+
+
+
+
+
+
+
+
+
+Hadoop
+========================
+    0. 可靠、可伸缩、分布式计算的开源软件
+        99.999高可用
+    1. HDFS
+        hadoop distributed file system
+    2. 去IOE
+        IBM ORACLE EMC
+    3. MapReduce
+        MR 映射和化简. 编程模型
+    4. 推荐
+
+
+big data 4V
+========================
+    1. Volume     体量大
+    2. Variaty    样式多
+    3. Velocity   速度快
+    4. Valueless  价值密度低  
+
+
+hadoop的安装
+========================
+    1. 安装Java
+       配置环境变量 JAVA_HOME PATH
+       /etc/environment
+    2. 安装hadoop
+       1. 解压后移动到安装目录
+       2. 配置环境变量
+          HADOOP_HOME
+          PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+       3. hadoop version
+
+
+
