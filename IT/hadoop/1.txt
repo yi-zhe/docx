@@ -38,7 +38,88 @@ hadoop的安装
        2. 配置环境变量
           HADOOP_HOME
           PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+
+          修改etc/hadoop/hadoop-env.sh配置JAVA_HOME
        3. hadoop version
 
+hadoop包含的模块
+=========================
+    1. Common 
+        支持其他模块的工具
+    2. HDFS
+        分布式文件系统
+        [进程]
+        NameNode           名称节点
+            存放目录
+        DataNode           数据节点
+            存放数据
+        SecondaryNameNode  辅助名称节点
+            备份目录
+    3. Yarn
+        yet another resource negotiate
+        任务调度和集群资源管理框架
+        [进程]
+        ResourceManager 资源管理器
+        NodeManager     节点管理器
+    4. MapReduce
+        基于Yarn的对大数据集进行并行处理的 编程模型
 
+Hadoop的配置模式
+=========================
+    1. Stand alone / local 独立模式/本地模式
+       默认的模式
+       hadoop fs -ls
+       没有启动任何Java守护进程, 使用本地文件系统, 适用于开发测试环境
 
+    2. Pseudo distributed  伪分布式
+       Hadoop的守护进程运行在本机上, 模拟集群
+       配置过程
+       1. core-site.xml
+          <configuration>
+              <property>
+                  <name>fs.defaultFS</name>
+                  <value>hdfs://localhost/</value>
+              </property>
+          </configuration>
+ 
+       2. hdfs-site.xml
+          <configuration>
+              <property>
+                  <name>dfs.replication</name>
+                  <value>1</value>
+              </property>
+          </configuration>
+
+       3. mapred-site.xml
+          <configuration>
+              <property>
+                  <name>mapreduce.framework.name</name>
+                  <value>yarn</value>
+              </property>
+          </configuration>
+
+       4. yarn-site.xml
+          <configuration>
+              <property>
+                  <name>yarn.resourcemanager.hostname</name>
+                  <value>localhost</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.aux-services</name>
+                  <value>mapreduce_shuffle</value>
+              </property>
+          </configuration>
+
+       5. 配置ssh无密码登录
+          1. 安装ssh
+          2. ssh-keygen -t rsa -P ‘’ -f ~/.ssh/id_rsa
+          3. 将公钥加入到其他机器的
+             cat id_rsa.pub >> authorized_keys中
+          4. 无密登录到localhost
+          5. hadoop namenode -format
+          6. start-all.sh
+          7. jps 查看进程
+          8. 查看文件系统
+             hadoop fs -ls /
+          9. hadoop fs -mkdir -p /user/ubuntu/data
+    3. Fully distributed   完全分布式
