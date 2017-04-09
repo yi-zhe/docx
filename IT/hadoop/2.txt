@@ -1,15 +1,15 @@
-é¦–æ¬¡å¯åŠ¨Hadoop
+Ê×´ÎÆô¶¯Hadoop
 =======================
-    1. æ ¼å¼åŒ–æ–‡ä»¶ç³»ç»Ÿ
+    1. ¸ñÊ½»¯ÎÄ¼þÏµÍ³
        hadoop namenode -format
 
-    2. å¯åŠ¨æ‰€æœ‰è¿›ç¨‹
+    2. Æô¶¯ËùÓÐ½ø³Ì
        start-all.sh
-    3. æŸ¥è¯¢è¿›ç¨‹
-    4. åœæ­¢æ‰€æœ‰è¿›ç¨‹ 
+    3. ²éÑ¯½ø³Ì
+    4. Í£Ö¹ËùÓÐ½ø³Ì 
        stop-all.sh
 
-ä½¿ç”¨webuiè®¿é—®hadoop hdfs
+Ê¹ÓÃwebui·ÃÎÊhadoop hdfs
 =========================
     1. hdfs webui http://ip:50070
 
@@ -17,17 +17,180 @@
 
     3. 2nn ip:50090
 
-å®Œå…¨åˆ†å¸ƒå¼
+ÍêÈ«·Ö²¼Ê½
 =========================
-    1. å‡†å¤‡å¤šå°æœºå™¨
-    2. å®‰è£…jdkå¹¶é…ç½®çŽ¯å¢ƒå˜é‡
+    1. ×¼±¸¶àÌ¨»úÆ÷
+    2. °²×°jdk²¢ÅäÖÃ»·¾³±äÁ¿
        JAVA_HOME PATH
-    3. å®‰è£…hadoopå¹¶é…ç½®çŽ¯å¢ƒå˜é‡
+    3. °²×°hadoop²¢ÅäÖÃ»·¾³±äÁ¿
        HADOOP_HOME PATH
-    4. å®‰è£…SSH
-       æŠŠNameNodeé…ç½®æˆå¯ä»¥æ— å¯†è®¿é—®å…¶ä»–æœºå™¨
+    4. °²×°SSH
+       °ÑNameNodeÅäÖÃ³É¿ÉÒÔÎÞÃÜ·ÃÎÊÆäËû»úÆ÷
 
-è¿œç¨‹åŒæ­¥
+Ô¶³ÌÍ¬²½
 =========================
 scp 
-rsync å…ƒæ•°æ®æ‹·è´å¾ˆå¼ºå¤§   
+rsync ÔªÊý¾Ý¿½±´ºÜÇ¿´ó   
+
+
+
+
+ÔÚËùÓÐ»úÆ÷ÉÏÖ´ÐÐÏàÍ¬µÄÃüÁî
+=============================
+xcall
+------------------
+#!/bin/bash
+
+if (( $#<1 )) ; then
+    echo no args;
+    exit;
+fi
+
+for (( host=200 ; host<205 ;  host=host+1 )) ; do
+    echo -------------s$host---------------
+    ssh s$host source /etc/profile && $@
+done
+
+xsync
+------------------
+#!/bin/bash
+
+if (( $#<1 )) ; then
+    echo no args;
+    exit;
+fi
+
+
+fname=`basename $1`
+
+pdir=`cd -P $(dirname $1) ;  pwd`
+
+for (( host=200 ;  host<205 ; host=host+1 )) ; do
+    echo -----------s$host-------------
+    rsync -rl $pdir/$fname `whoami`@s$host:$pdir
+done
+
+
+ÍêÈ«·Ö²¼Ê½¼¯ÈºÅäÖÃ
+=============================
+1. ×¼±¸5Ì¨¿Í»§»ú
+2. °²×°jdkÅäÖÃ»·¾³±äÁ¿
+3. °²×°hadoopÅäÖÃ»·¾³±äÁ¿
+4. °²×°sshÅäÖÃÎÞÃÜµÇÂ¼
+5. ÅäÖÃÎÄ¼þ
+   [$HADOOP_HOME/etc/hadoop/core-site.xml]
+   fs.defaultFS=hdfs://s200/
+
+   [$HADOOP_HOME/etc/hadoop/yarn-site.xml]
+   yarn.resourcemanager.hostname=s200
+
+   [$HADOOP_HOME/etc/hadoop/hdfs-site.xml]
+   dfs.replication=3
+
+   [$HADOOP_HOME/etc/hadoop/slaves]
+   s201
+   s202
+   s203
+6. °²×°rsync
+7. ÔÚ¼¯ÈºÉÏ·Ö·¢ÅäÖÃÎÄ¼þ
+
+
+
+hadoop fs -put hello.txt /user/ubuntu/data/
+
+1. /etc/sysconfig/network
+2. /etc/sysconfig/network-scripts/ifcfg-e...  
+   /etc/resolv.conf
+   /etc/hosts
+3. service firewalld stop
+4. chkconfig firewalld off
+5. yum install -y vim openssh-server net-tools.x86_64 rsync.x86_64
+6. ~/.bashrc alias vi='vim'
+7. JAVA_HOME HADOOP_HOME PATH hadoop-env.sh
+
+±¾µØÎÄ¼þµÄÄÚÈÝ
+===============================
+    1. Ãû³Æ½Úµãs200: /tmp/hadoop-root/dfs/name/current/VERSION 
+	  #Fri Apr 07 21:07:18 EDT 2017
+      namespaceID=1824721895
+      clusterID=CID-d00f3274-4f56-46a2-89b1-ce6d01200214
+      cTime=0
+      storageType=NAME_NODE
+      blockpoolID=BP-1260364991-192.168.0.200-1491613638266
+      layoutVersion=-63
+	  
+	  Êý¾Ý½Úµãs201: /tmp/hadoop-root/dfs/data/current/VERSION 
+      #Fri Apr 07 21:19:35 EDT 2017
+      storageID=DS-9308d42d-db01-4638-bc13-d16a54b254c7
+      clusterID=CID-d00f3274-4f56-46a2-89b1-ce6d01200214
+      cTime=0
+      datanodeUuid=51f700b0-1921-4301-9beb-dabff17469b6
+      storageType=DATA_NODE
+      layoutVersion=-56
+
+	  Êý¾Ý½Úµãs202:
+	  #Fri Apr 07 21:19:35 EDT 2017
+      storageID=DS-ae31ac67-f4d2-4766-b1c6-b1e9b9d57415
+      clusterID=CID-d00f3274-4f56-46a2-89b1-ce6d01200214
+      cTime=0
+      datanodeUuid=f88543a8-49a6-480e-9645-225c253d3d8b
+      storageType=DATA_NODE
+      layoutVersion=-56
+  
+      Êý¾Ý½Úµãs203: ÂÔ
+	  
+	  ¸¨ÖúÃû³Æ½Úµã:
+	  cat /tmp/hadoop-root/dfs/namesecondary/current/VERSION
+      #Fri Apr 07 23:16:07 EDT 2017
+      namespaceID=1824721895
+      clusterID=CID-d00f3274-4f56-46a2-89b1-ce6d01200214
+      cTime=0
+      storageType=NAME_NODE
+      blockpoolID=BP-1260364991-192.168.0.200-1491613638266
+      layoutVersion=-63
+
+      
+ÐÞ¸Ä±¾µØµÄÁÙÊ±Ä¿Â¼
+===============================
+    1. [core-site.xml]
+	   hadoop.tmp.dir=/home/ubuntu/hadoop
+	2. ·Ö·¢ÅäÖÃ
+	3. stop-all.sh
+	4. hadoop namenode -format
+	5. start-all.sh
+
+Õë¶Ôµ¥¸öÖ÷»úµÄ½ø³Ì²Ù×÷
+===============================
+hadoop-daemon.sh start/stop datanode/namenode/secondarynamenode
+hadoop-daemons.sh ....
+	
+	
+HDFS³£ÓÃ²Ù×÷
+================================
+	1. ¸ñÊ½»¯ hadoop fs -format
+	2. hadoop fs == hdfs dfs
+	3. hadoop fs -put  ÉÏ´«µ½hdfsÎÄ¼þÏµÍ³
+	             -copyFromLocal
+	4. hdfs dfs -copyToLocal
+	            -get          
+	5. hdfs dfs -moveFromLocal/-moveToLocal
+	6. hdfs dfs -rm -r 
+	7. hdfs dfs -cp ÔÚHDFSÉÏ½øÐÐ¿½±´
+	
+hadoop hdfsÎÄ¼þ¿é´óÐ¡128M
+=================================
+    1. ¼õÉÙ´ÅÅÌÑ°µ½Ê±¼ä 
+	
+	
+Í¨¹ýAPI·ÃÎÊHDFS
+=================================
+    1. eclipse ¿ª·¢»·¾³
+	2. µ¼Èëjar°ü
+	3. URL.setURLStreamHandlerFactory(new FsUrlStreamHandlerFactory());
+	4. URL u = new URL("hdfs://...");
+	   URLConnection conn = u.openConnection();
+	   InputStream is = conn.getInputStream();
+	5. FileSystem Api 
+	   
+	
+	
