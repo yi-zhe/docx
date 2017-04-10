@@ -74,13 +74,33 @@ block
     7. 
 
 
+HDFS架构
+===============================
+    运行在廉价的硬件设备上, 成本较低, 具有高容错性
+	HDFS是主从架构的, 由一个名称节点以及多个数据节点组成
+	名字节点负责namespace管理及client访问, 内部文件被切块存储在数据节点上
+	
+	集群启动后, 数据节点会向名字节点报告它有哪些数据块
+	
+	1. 
 
 
-
-
-
+使用oiv和oev查看namenode的镜像文件和编辑日志文件
+===============================
+    hdfs oiv -p xml -i xxx -o xxx
+	hdfs oev -p xml -i xxx -o xxx
  
-
+ 
+ 
+ 文件的读取过程
+ ==============================
+     1. HDFS client -> open -> DistributedFileSystem
+	 2. DistributedFileSystem -> 获得块位置 -> NameNode
+	 3. HDFS client -> read -> FSDataInputStream
+	 4. FSDataInputStream -> read -> DataNode
+	 5. FSDataInputStream -> read -> other DataNode
+	 6. FSDataInputStream -> close
+	 7. 
 
 
 
