@@ -1,0 +1,85 @@
+hadoop IO
+=============================
+    1. 客户端命令
+	2. FileSystem
+	    文件系统 DistributedFileSystem
+    3. FSDataInputStream fis = FileSystem.open();
+	4. FSDataOutputStream fos = FileSystem.create(Path); 
+	
+
+NameNode
+==============================
+    存放元数据(名称, 副本数, 块大小, 权限)
+
+查看NameNode的镜像文件
+==============================
+    hdfs oiv -p XML -i fsimage -o xxx
+	offline image viewer
+
+查看NameNode的编辑文件(可以自动滚动, 或手动滚动)
+==============================
+	hdfs oev -p XML -i editfile -o xxx
+	offline edit viewer
+	
+edit日志手动滚动
+==============================
+    1. hdfs dfsadmin -rollEdit 
+	
+安全模式
+==============================
+    hdfs dfsadmin -safemode get/enter/leave/wait
+	
+保存名字空间/融合镜像文件和编辑日志
+==============================
+    1. 进入安全模式
+	2. 进行保存 hdfs dfsadmin -saveNamespace
+	3. 退出安全模式
+ 
+ 
+一致性模型
+=============================
+    读写文件是否立即可见
+	
+	新建文件后, 在名字空间中是立即可见的, 但当前正在写入党块对其他reader是不可见的
+	如果希望写入的数据立即被其他client见到
+	使用
+	FSDataOutputStream.hsync()  清理客户端缓冲区数据, 并写入磁盘, 不能立即可见, 磁盘自己的缓存
+	或
+	FSDataOutputStream.hflush() 清理客户端缓冲区数据, 被其他client可见
+	
+	
+distcp
+=============================
+    两个hadoop集群间的递归数据复制 
+	hadoop distcp hdfs://s101:8020/user/ubuntu/hello.txt hdfs://s102:8020/user/ubuntu/
+	
+Hadoop归档文件
+=============================
+    hdfs dfs -mkdir /user/my
+	[需要启动yarn.sh]
+    hadoop archive -archiveName myhar.har -p /user/ubuntu /user/my	
+	
+	归档成一个叫做xx.har的文件夹,　该文件夹下有相应的数据文件
+	xx.har目录是一个整体, 将该目录看做一个归档文件
+	
+	查看归档文件
+	hadoop fs -ls -R har:///user/myhar.har
+	
+	
+	解归档文件
+	hdfs dfs -cp xx.har /xx/xx/dir
+	
+数据完整性校验
+===============================
+    1. 一般性校验没有纠错机制
+	2. io.bytes.per.checksum 多少个自己计算一次校验和
+	   一定需要小于io.file.buffer.size 
+	3. 数据写入hdfs的datanode管道时, 由最后一个节点负责校验和校验
+	4. DataNode在后台会开启守护线程-DataBlockScanner检测数据的校验和
+	
+	
+	
+	
+	
+	
+	
