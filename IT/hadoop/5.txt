@@ -77,6 +77,59 @@ Hadoop归档文件
 	3. 数据写入hdfs的datanode管道时, 由最后一个节点负责校验和校验
 	4. DataNode在后台会开启守护线程-DataBlockScanner检测数据的校验和
 	
+LocalFileSystem
+===============================
+    Configuration conf = new ...;
+	conf.set("fs.defaultFS", "file:///");
+	FileSystem fs = FileSystem.get(conf);
+	
+	
+查看校验和
+hdfs dfs -checksum hdfs://s101:8020/user/hello.txt
+
+压缩解压缩
+=================================
+	ZipInputStream
+	ZipOutputStream
+	ZipEntry
+	
+	
+优化手段
+=================================
+har
+直接内存访问
+压缩	
+	
+	
+codec/decodec
+=================================
+    编码/解码
+	
+	
+	
+Ubuntu上安装eclipse
+=================================
+    1. 下载
+	2. 解压
+	3. 创建符号链接
+	4. 配置环境变量
+	   /etc/environment
+	5. 后台打开
+	6. hadoop/native/下的动态库复制到/lib目录下
+	7. 代码编写参考书上例子
+	
+压缩空间/压缩时间/解压缩时间
+=================================
+    1. 
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
