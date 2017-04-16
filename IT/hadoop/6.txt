@@ -41,11 +41,55 @@ codec
        C_INCLUDE_PATH=/usr/local/lzo-2.06/include \   // lzo2.06µÄÍ·ÎÄ¼şÄ¿Â¼
        LIBRARY_PATH=/usr/local/lzo-2.06/lib           // lzo2.06µÄ¿âÎÄ¼şÄ¿Â¼
 
-       
+       ´î½¨maven»·¾³ÿ
 
     5. °²×°maven
        mvn clean test
+       ³öÏÖlzo¿âÎÄ¼şÕÒ²»µ½, ½«liblzo2.so.xxx¿½±´µ½/libÏÂÖØĞÂ³¢ÊÔ
 
+       mvn clean package
+
+ÔÚHadoopÏîÄ¿ÖĞ¼¯³Éhadoop-lzo-masterµÄjar
+============================
+    1. ¿½±´jarÎÄ¼şµ½ÏîÄ¿
+    2. Ë¢ĞÂÏîÄ¿, ²¢½«jarÌí¼Óµ½build path
+
+
+°²×°maven
+=========================
+    1. ÏÂÔØ½âÑ¹µ½/softÏÂ
+    2. ÅäÖÃmaven»·¾³±äÁ¿
+       /etc/environment
+       M2_HOME=/soft/maven
+       PATH=$PATH:$M2_HOME/bin
+    3. ½øÈëµ½ÏîÄ¿ÖĞ°üº¬pom.xmlµÄÄ¿Â¼
+       mvn clean test
+
+
+±¾µØmaven·şÎñÆ÷´î½¨
+========================
+    1. °²×°tomcat
+    2. °²×°nexus.warÎÄ¼ş
+       a. ¸´ÖÆnexus.warµ½$TOMCAT_HOME/webapps
+       b. Æô¶¯tomcat
+       c. http://localhost:8080/nexus/
+    3. ĞŞ¸Ä$MAVEN_HOME/conf/settings.xml Ê¹ÓÃ±¾µØ²Ö¿âµÄÅäÖÃ
+       ¼ÓÉÏÈçÏÂ
+       hadoop-06-03
+    4. ÅäÖÃ±¾µØmaven²Ö¿âµÄÅäÖÃ(±¾µØÀ­È¡²»µ½Ê±È¥ÍâÍøÄÄ¸öÍøÖ·À­È¡)
+       tomcat/webapps/nexus/WEB-INFO/classes/nexus.properties
+       nexus-work=²Ö¿âÄ¿Â¼
+       runtime=
+       nexus-app=
+
+
+Snappy°²×°ÓëÅäÖÃ
+========================
+    1. apt-get install libsnappy1
+    2. ls /usr/lib/libsnappy.so.1.1.2
+
+CodecPoolÖ§³Ö·´¸´Ê¹ÓÃÑ¹ËõºÍ½âÑ¹Ëõ
+========================
 
 
 
