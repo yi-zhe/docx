@@ -1,0 +1,56 @@
+codec
+=========================
+   1. deflate
+   2. gzip
+   3. bzip2
+   4. LZO
+   5. LZ4
+   6. Snappy
+
+使用hadoop的checknative命令, 检查本地库安装情况
+=========================
+   [root@s200 ~]# hadoop checknative -a
+   17/04/15 17:37:35 WARN bzip2.Bzip2Factory: Failed to load/initialize native-bzip2 library system-native, will use pure-Java version
+   17/04/15 17:37:35 INFO zlib.ZlibFactory: Successfully loaded & initialized native-zlib library
+   Native library checking:
+   hadoop:  true /soft/hadoop-2.7.3/lib/native/libhadoop.so.1.0.0
+   zlib:    true /lib64/libz.so.1
+   snappy:  false
+   lz4:     true revision:99
+   bzip2:   false
+   openssl: false Cannot load libcrypto.so (libcrypto.so: 无法打开共享对象文件: 没有那个文件或目录)!
+   17/04/15 17:37:35 INFO util.ExitUtil: Exiting with status 1
+
+
+安装lzo-2.06版本
+=========================
+    1. 下载解压lzo-2.06.tar.gz
+    2. 编译安装lzo库 
+       ./configure —enable-shared
+       make
+       make install
+    3. 检查是否生成lzo库文件
+
+
+编译hadoop-lzo-master
+=========================
+    1. 下载并解压hadoop-lzo-master.zip
+    2. jdk7以上
+    3. 安装LZO-2.X库
+    4. 编译
+       C_INCLUDE_PATH=/usr/local/lzo-2.06/include \   // lzo2.06的头文件目录
+       LIBRARY_PATH=/usr/local/lzo-2.06/lib           // lzo2.06的库文件目录
+
+       
+
+    5. 安装maven
+       mvn clean test
+
+
+
+
+
+
+
+
+
