@@ -1,0 +1,50 @@
+maven
+======================================
+      mvn clean
+	  mvn test
+	  mvn compile
+	  mvn package
+	  mvn install
+	  
+	  mvn archetype:generate
+	  
+	  
+SequenceFile
+=======================================
+
+    同步点的作用, 切割文件
+
+    1. Header + Record + Sync(同步标识)
+	
+
+MapFile
+=======================================
+
+    1. 排序过度SequenceFile, 有索引
+	2. key必须是有序的从小到大
+	
+序列化/串行化
+=======================================
+   1. 将对象转换成byte[]
+   2. JVM 实现的序列化java.io.Serializable
+      ObjectInputStream/ObjectOutputStream
+   
+Hadoop的序列化格式Writable
+=======================================
+    Writable#write 
+	Writable#readFields
+   
+    Hadoop 从对象出发的
+	JVM    从流出发的
+	
+	
+IntWritable/VIntWritable(1~5个字节)
+=======================================
+    实现了WritableComparatable {
+	    write
+		readFields
+		compareTo
+	}
+   
+Text串行化
+=======================================
