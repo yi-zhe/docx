@@ -1,0 +1,29 @@
+NN检查点的工作原理
+=======================
+    1. Roll edits
+    2. 2NN retrive fsimage and edits from primary
+    3. 2NN merge new fsimage
+    4. transfer checkpoint to primary
+    5. NN roll fsimage.ckpt and edits.new
+
+创建检查点的条件
+======================
+    dfs.namenode.checkpoint.period 
+
+    dfs.namenode.checkpoint.check.period  // 辅助名称节点检查时间
+    dfs.namenode.chekcpoint.txns // 每当产生这么多个操作时就会进行检查点创建
+
+创建检查点的过程
+=======================
+    1. NN编辑日志滚动
+    2. 2NN 复制NN上的fsimage和edits文件
+    3. 2NN 上进行融合
+    4. 2NN 将新的image发送回NN
+    5. NN重命名新的image 替换旧的
+
+hdfs dfsadmin
+=======================
+
+    1. 设置配额管理(对目录进行设置, 值必须是整数, 而且有管理员权限)
+       目录配额 (目录所含有的文件或文件夹的个数)
+       空间配额 ()
