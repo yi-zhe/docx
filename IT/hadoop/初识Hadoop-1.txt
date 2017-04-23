@@ -109,13 +109,47 @@ Hadoop 2.x
 
         input -> map -> shuffle -> reduce -> output
 
+历史服务器 (http://namenodeip:19888)
+===========================
+
+    启动 mr-jobhistory-daemon.sh start historyserver
 
 
 
+日志聚集功能(将应用运行完成后, 将日志信息上传到HDFS文件系统上)
+http://namenodeip:
+===========================
+
+    启动日志聚集: 在yarn-site.xml中增加
+    <property>
+          <name>yarn.log-aggregation-enable</name>
+          <value>true</value>
+    </property>
 
 
+配置文件
+===========================
+    * 默认配置文件
+      core-default.xml
+      hdfs-default.xml
+      yarn-default.xml
+      mapred-default.xml
 
+    * 自定义配置文件
+      core-site.xml
+      hdfs-site.xml
+      yarn-site.xml
+      mapred-site.xml
 
+一段代码获得HDFS系统对象
+===========================
+
+    public static void main(String[] args) {
+        Configuration conf = new Configuration();
+        FileSystem fileSystem = new FileSystem(conf);
+
+        System.out.println(fileSystem);
+    }
 
 
 
