@@ -1,0 +1,135 @@
+input -> map -> reduce -> output
+
+数据传输流通的格式 
+<key, value>
+
+
+编写程序并打包
+
+使用yarn提交任务
+==============================================
+
+yarn jar jarFile MainClass InputFilePath OutputFolder
+
+yarn jar ~/wordc.jar com.ibeifeng.hadoop.senior.mapreduce.MapReduceTest /user/ubuntu/input/wc.input /user/ubuntu/output0
+
+MapReduce中的数据类型的讲解
+==============================================
+    Integer    ->   IntWritable
+	Long       ->   LongWritable
+	String     ->   Text
+	null       ->   NullWritable
+	
+	
+	必须实现Writable接口
+	
+	Key必须实现Comparable接口
+	
+自定义数据类型
+==============================================
+e.g.
+
+
+MapReduce Shuffle
+==============================================
+    过程
+	* step 1
+	   input 
+	      InputFormat
+		      读取数据
+			  转换为<key, value>
+		  
+		  FileInputFormat
+		      TextInputFormat
+			  
+    * step 2
+	    map 
+		   ModuleMapper
+		       map(KEYIN, VALUEIN, KEYOUT, VALUEOUT>
+			   
+			* 默认情况下
+			    KEYIN: LongWritable
+				VALUEIN : Text
+				
+	* step 3
+	    shuffle
+		    * process
+			  map, output<key,value>
+			      memory
+				  本地磁盘spill
+				      分区partition
+                      排序sort
+              很多小文件, spill
+                   合并 merge
+                   排序
+                      大文件	Map运行的机器的本地磁盘上			   
+			  ---------------------------
+			  
+			  copy
+			      ReduceTask 会到MapTask运行的机器上拷贝数据
+			  合并 merge 排序sort
+			  分组group
+			      将相同key的value放到一起
+				  
+	* step 4
+	    reduce
+		    reduce(KEYIN, VALUEIN, KEYOUT, VALUEOUT)
+			map输出的数据类型与reduce输入的类型一致
+			
+	* step 5
+	    output
+		    OutputFormat
+	    FileOutputFormat
+		    TextOutputFormat
+				  
+		    Map-01
+			
+			Map-02
+			
+			Map-03
+		
+		Reduce-01
+		    a-zA-Z
+		Reduce-02
+            other
+
+
+    分区partition
+	排序sort
+	copy
+	分组group
+	压缩
+	combine
+
+在Job中的设置
+=========================================
+   job.setPartitionerClass(cls)
+   job.setSortComparatorClass(cls)
+   job.setCombinerClass(cls)
+   job.setGroupingComparatorClass(cls)
+   
+   
+Reduce个数设置
+=========================================
+
+   job.setNumReduceTasks 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
