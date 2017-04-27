@@ -1,0 +1,45 @@
+HDFS
+    分布式系统
+	* NameNode
+	  元数据
+	  文件名称/路径/所属者/所属组/权限/副本数
+	  
+	* DataNode
+	   128M
+	   Block方式存储
+	   本地磁盘
+	       dfs.datanode.data.dir=path
+		   
+	* Client
+	   -> NameNode ->
+	   
+	   
+HDFS HA 2.x版本发布的
+======================================================
+
+    * NameNode Active 
+	* NameNode Standby(对NameNode Active进行热备)
+	
+	
+	SPOF(Single Point Of Failure)
+
+	客户端通过Proxy(多台机器?)对NameNode进行请求
+	使用ZooKeep做自动故障转移
+	
+	如何保证两个NameNode的元数据一致?
+	NameNode Active 向共享编辑日志(JournalNode)中写
+	   如果出现不一致, 通过ZooKeeper裁判
+	NameNode Standby 从共享编辑日志(JournalNode)中读取
+	
+	其他DataNode同时向两种NameNode发送心跳报告
+	
+    四大要点
+
+	1. Shared Edits
+	2. NameNode
+	    Active Standby
+	3. Client proxy
+	4. fence
+	    同一时刻只有一个NameNode提供服务
+	
+	

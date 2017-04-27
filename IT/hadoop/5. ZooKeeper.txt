@@ -1,0 +1,22 @@
+开源的分布式的，为分布式应用提供协调服务的项目
+
+角色
+
+Leader
+Learner
+
+业务场景
+观察者模式
+=====================================
+统一命名服务
+配置管理
+集群管理
+共享锁/同步锁
+
+安装
+=====================================
+1. 下载解压zookeeper
+2. 修改配置文件$ZOO_KEEPER_HOME/conf/zoo.cfg
+   dataDir=$ZOO_KEEPER_HOME/data/zkData
+   
+3. 启动 zkServer.sh start

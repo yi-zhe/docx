@@ -1,0 +1,54 @@
+Hadoop集群的基准测试
+==================================
+    基本测试 
+	  服务启动 是否可用 简单的应用
+	  hdfs
+	     读写操作
+	  yarn
+	  
+	  mapreduce
+		 
+
+
+	基准测试
+	   测试集群性能
+	   hdfs
+	     压力读写
+	   网络
+	   
+	监控集群
+	   Cloudera
+	   Cloudera Manager
+	       部署安装集群
+		   监控集群
+		   配置同步集群
+		   预警。。
+		   
+
+使用NTP同步时间
+====================================
+    找一台机器作为时间服务器
+	所有机器定时从这台机器同步时间
+	
+	CentOS下安装NTP
+	
+	/etc/ntp.conf
+	restrict 192.168.0.0 取消注释
+	
+	注释 server 0
+	     server 1
+		 server 2
+		 
+    server 127.127.1.0 取消注释
+	fudge  127.127.1.0 stratum 10 取消注释
+	
+
+	vi /etc/sysconfig/ntpd
+	SYNC_HWCLOCK=yes
+	   
+	   
+其他机器配置BOSS
+====================================
+root 用户下
+crontab -e
+0-59/10 * * * * /usr/sbin/ntpdate hostname
