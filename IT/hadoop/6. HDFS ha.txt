@@ -41,5 +41,55 @@ HDFS HA 2.x版本发布的
 	3. Client proxy
 	4. fence
 	    同一时刻只有一个NameNode提供服务
+		
+		
+		
+		
+Hadoop HA配置
+=========================================
+
+
+启动
+    1. 各个JournalNode节点上启动JournalNode
+	   hadoop-daemon.sh start journalnode
+	2. 在NN1上进行格式化并启动
+	   hdfs namenode -format
+	   hadoop-daemon.sh start namenode
+	3. NN2上同步NN1的元数据信息
+	   hdfs namenode -bootstrapStandby
+	4. 启动NN2
+	   hadoop-daemon.sh start namenode
+	5. NN1上启动所有DataNode  
+	   hadoop-daemon.sh start datanode
+	6. NN1切换为Active
+	   hdfs haadmin -transitionToActive NN1切换为Active
 	
-	
+自动故障转移配置(ZooKeeper)
+==========================================
+  启动后都是Standby
+     需要选举一个为Active
+  监控
+     ZKFC(ZooKeeper Failover Controller)
+	 
+	 
+配置
+   hdfs-site.xml
+     dfs.ha.automatic-failover.enabled=true
+
+   core-site.xml
+     ha.zookeeper.quorum=host1:port1,host2:port2...
+
+启动过程
+   1. 启动ZooKeeper集群
+   2. 初始化HA在ZooKeeper中的状态
+      hdfs zkfc -formatZK
+   3. 启动HDFS
+      start-dfs.sh
+   4. 	  
+	 
+   host1           host2            host3
+   NameNode        NameNode
+   
+   ZKFC            ZKFC
+   
+   JournalNode     JournalNode      JournalNode
