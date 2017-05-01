@@ -1,0 +1,18 @@
+1. Common模块
+
+    - 使用HTTP代理服务时, 身份认证的增强. 通过代理服务器访问WebHDFS时很有用
+	- 新的指标接收器, 可以直接写入Graphite
+	- Hadoop Compatible Filesystem的标准化工作
+	
+2. HDFS
+
+    - 支持POSIX风格的文件系统扩展属性
+	- 使用Offline ImageViewer, 客户端可以通过WebHDFS的API浏览fsimage
+	- NFS网关的支持性改进和问题修复
+	- SecondaryNameNode/JournalNode/DataNode的Web UI使用html5
+
+3. YARN
+
+    - YARN的Rest API支持写/修改操作, 用户可以通过Rest API提交和删除应用程序
+	- YARN中存储的时间线信息(用于通用的和应用程序特定的信息)支持通过Kerberos的身份认证
+	
