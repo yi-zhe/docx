@@ -1,0 +1,4 @@
+YARN
+   ResourceManager
+       管理集群资源
+	   分配调度

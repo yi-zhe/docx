@@ -1,0 +1,10 @@
+1. Apache
+     企业实际使用的并不多, 最原始最基础最根本的版本
+2. Cloudera
+     Flume, Hue, Impala
+	 
+	CDH Cloudera Distribute Hadoop
+	Cloudera Manager
+
+3. Hortonworks
+   HDP Hortonworks Data Platform   
