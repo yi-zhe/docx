@@ -1,0 +1,133 @@
+1. 前置条件(GNU/Linux为例)
+
+    - Java
+	- ssh(sshd必须能够正常运行)
+	
+	Cent7  配置
+	1. 配置网络
+	   设置ip/hostname
+	   vi /etc/sysconfig/network-scripts/ifcfg-ens33
+	   设置为以下行
+	   
+	   
+	   vi /etc/resolv.conf
+	   nameserver 8.8.8.8
+	   
+	   service network restart
+	2. yum install -y net-tools.x86_64 openssh-server vim rsync
+	3. 关闭或者设置防火墙规则
+	   chkconfig firewalld off
+	   service firewalld stop
+	3. 配置ssh
+	   ssh-keygen -t rsa
+	   cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+	4. 安装配置jdk/hadoop
+	   scp jdk-8u121-linux-x64.tar.gz hadoop-2.7.3.tar.gz root@192.168.0.240:/
+	   
+	   [root@localhost /]# mkdir soft
+       [root@localhost /]# tar -xf hadoop-2.7.3.tar.gz -C /soft
+       [root@localhost /]# tar -xf jdk-8u121-linux-x64.tar.gz -C /soft
+       [root@localhost /]# cd /soft/
+       [root@localhost soft]# ln -s jdk1.8.0_121/ jdk
+       [root@localhost soft]# ln -s hadoop-2.7.3/ hadoop
+    5. 配置环境变量
+	   vi /etc/profile
+      alias vi='vim'
+      export HADOOP_HOME=/soft/hadoop
+      export JAVA_HOME=/soft/jdk
+      export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$JAVA_HOME/bin
+	
+	6. source /etc/profile
+	7. 测试
+	   [root@localhost soft]# java -version
+       java version "1.8.0_121"
+       Java(TM) SE Runtime Environment (build 1.8.0_121-b13)
+       Java HotSpot(TM) 64-Bit Server VM (build 25.121-b13, mixed mode)
+       [root@localhost soft]# hadoop version
+       Hadoop 2.7.3
+       Subversion https://git-wip-us.apache.org/repos/asf/hadoop.git -r baa91f7c6bc9cb92be5982de4719c1c8af91ccff
+       Compiled by root on 2016-08-18T01:41Z
+       Compiled with protoc 2.5.0
+       From source with checksum 2e4ce5f957ea4db193bce3734ff29ff4
+       This command was run using /soft/hadoop-2.7.3/share/hadoop/common/hadoop-common-2.7.3.jar
+
+	
+    8. $HADOOP_HOME/etc/hadoop/hadoop-env.sh
+       export JAVA_HOME=/soft/jdk(jdk的安装路径)
+	
+3. Hadoop运行的几种方式
+    1. 本地模式(默认模式)
+	
+	
+	2. 伪分布式
+	   每一个Hadoop后台进程运行在单独的Java进程中
+	   配置
+	   1. /etc/hadoop/core-site.xml
+	       <configuration>
+               <property>
+                   <name>fs.defaultFS</name>
+                   <value>hdfs://localhost:9000</value>
+               </property>
+           </configuration>
+	    
+		2. 配置副本数 /etc/hadoop/hdfs-site.xml
+		
+		   <configuration>
+               <property>
+                   <name>dfs.replication</name>
+                   <value>1</value>
+               </property>
+           </configuration>
+		
+		3. 配置ssh本机免密码登录
+		   上面第三步已经配置过
+		   
+		4. 格式化文件系统
+		   hdfs namenode -format
+		   
+		5. 启动名称节点和数据节点的守护进程
+		   start-dfs.sh
+		   
+		6. 日志默认位置在$HADOOP_HOME/logs
+		   名称节点的默认web地址 http://localhost:50070
+		   
+		7. 创建目录并将测试文件拷贝进去
+		    hdfs dfs -mkdir -p /user/liuyang/input
+			hdfs dfs -put /soft/hadoop/etc/hadoop /user/liuyang/input
+		
+		8. 运行例子程序
+		   hadoop jar /soft/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar grep /user/liuyang/input/hadoop /user/liuyang/output 'dfs[a-z.]+'
+		   
+		9. 查看结果
+		   hdfs dfs -cat /user/liuyang/output*
+		
+		10. 停止进程
+		    stop-dfs.sh
+			
+	    =========
+		单节点上的Yarn配置
+		
+		1. /soft/hadoop/etc/hadoop/mapred-site.xml
+		
+		   <configuration>
+               <property>
+                   <name>mapreduce.framework.name</name>
+                   <value>yarn</value>
+               </property>
+           </configuration>
+		   
+		2. /soft/hadoop/etc/hadoop/yarn-site.xml
+		
+		    <configuration>
+                <property>
+                    <name>yarn.nodemanager.aux-services</name>
+                    <value>mapreduce_shuffle</value>
+                </property>
+            </configuration>
+
+		3. start-yarn.sh
+        4. stop-yarn.sh	
+		
+		ResourceManager: http://localhost:8088/
+			
+			3. 完全分布式
