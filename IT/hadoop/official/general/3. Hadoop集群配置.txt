@@ -1,0 +1,130 @@
+1. 安装
+
+    在每天机器上解压Hadoop或者通过包管理工具安装
+	
+	典型情况是, 集群中的机器一台用做NameNode, 另一台用做ResourceManager
+	
+	其他服务(比如Web App Proxy Server/MapReduce Job History Server)可以使用
+	单独的机器或者使用共享的硬件
+	
+	集群中的其他机器用做DataNode和NodeManager, 它们都是从节点
+	
+2. 在非安全模式下配置Hadoop
+
+   Hadoop中两类重要的配置文件
+   1. 只读的默认配置文件
+      core-default.xml
+	  hdfs-default.xml
+	  yarn-default.xml
+	  mapred-default.xml
+	  
+   2. 特定集群的配置文件
+      core-site.xml
+	  hdfs-site.xml
+	  yarn-site.xml
+	  mapred-site.xml
+    
+    也可以通过设置$HADOOP_HOME/etc/hadoop/hadoop-env.sh
+	和$HADOOP_HOME/etc/hadoop/yarn-env.sh中的值控制Hadoop
+	
+	HDFS守护进程包括NameNode, SecondaryNameNode和DataNode. 
+	YARN守护进程包括ResourceManager, NodeManager和WebAppProxy.
+	如果使用MapReduce那么MapReduce Job History也会运行
+	对于大型集群, 所有这些守护进程都需要运行在单独的主机上.
+	
+	
+	- 配置Hadoop守护进程的环境
+	  管理员使用
+	  $HADOOP_HOME/etc/hadoop/hadoop-env.sh
+	  $HADOOP_HOME/etc/hadoop/mapred-env.sh
+	  $HADOOP_HOME/etc/hadoop/yarn-env.sh
+	  配置Hadoop进程的环境
+	  
+	  NameNode                          HADOOP_NAMENODE_OPTS
+      DataNode                          HADOOP_DATANODE_OPTS
+      Secondary NameNode                HADOOP_SECONDARYNAMENODE_OPTS
+      ResourceManager                   YARN_RESOURCEMANAGER_OPTS
+      NodeManager                       YARN_NODEMANAGER_OPTS
+      WebAppProxy                       YARN_PROXYSERVER_OPTS
+      Map Reduce Job History Server	    HADOOP_JOB_HISTORYSERVER_OPTS
+	  
+	  ResourceManager                   YARN_RESOURCEMANAGER_HEAPSIZE
+      NodeManager                       YARN_NODEMANAGER_HEAPSIZE
+      WebAppProxy                       YARN_PROXYSERVER_HEAPSIZE
+      Map Reduce Job History Server	    HADOOP_JOB_HISTORYSERVER_HEAPSIZE
+	
+	  e.g.
+	  配置NameNode使用parallelGC则在hadoop-env.sh 中配置 
+	  export HADOOP_NAMENODE_OPTS="-XX:+UseParallelGC"
+	  
+	  其他需要配置的参数有
+	  HADOOP_PID_DIR
+	  HADOOP_LOG_DIR
+	  HADOOP_HEAPSIZE
+	  YARN_HEAPSIZE
+	
+	  大多数情况下HADOOP_PID_DIR/HADOOP_LOG_DIR应该配置为只有运行该进程的用户可写
+	  否则容易被**symlink攻击**
+	  
+	- 配置Hadoop守护进程
+      
+      etc/hadoop/core-site.xml
+      fs.defaultFS           hdfs://host:port/   NameNode主机
+      io.file.buffer.size	 131072              读写SequenceFile的缓冲区大小
+	
+	  etc/hadoop/hdfs-site.xml
+	  - NameNode
+	    dfs.namenode.name.dir       存储在本地文件系统上的名字空间文件和事务日志的路径,
+		                            可以用逗号分隔多个路径, 作为备份
+		dfs.hosts/dfs.hosts.exclude 允许或者排除的DataNode
+        dfs.blocksize               HDFS块大小
+        dfs.namenode.handler.count  处理大量RPC的NameNode线程数
+    
+      - DataNode
+        dfs.datanode.data.dir       DataNode在本地文件系统上存储数据块的路径
+
+      /etc/hadoop/yarn-site.xml
+      - ResourceManager/NodeManager
+      	yarn.acl.enable             是否启用ACL
+        yarn.admin.acl              集群管理是否启用ACL
+        yarn.log-aggregation-enable 日志聚集开关
+
+      - ResourceManager
+      - NodeManager
+      - History Server
+      - MapReduce 应用程序
+      - MapReduce JobHistory
+
+3. NodeManager的监控
+
+   NodeManager能够周期性地执行管理员给定的脚本, 脚本中定义自己的检查,
+   如果认为机器已经不可用, 那么向标准输出打印包含ERROR的字符串, 然后
+   本NodeManager就会报告它的不健康状况, 本NodeManager就会被列入黑名单,
+   直到恢复. 对于磁盘坏道问题, NodeManager会自动处理, 不需要脚本自己处理
+
+   配置项
+   yarn.nodemanager.health-checker.script.path
+   yarn.nodemanager.health-checker.script.opts
+   yarn.nodemanager.health-checker.script.interval-ms
+   yarn.nodemanager.health-checker.script.timeout-ms   
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
