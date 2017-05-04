@@ -106,8 +106,29 @@
    yarn.nodemanager.health-checker.script.path
    yarn.nodemanager.health-checker.script.opts
    yarn.nodemanager.health-checker.script.interval-ms
-   yarn.nodemanager.health-checker.script.timeout-ms   
+   yarn.nodemanager.health-checker.script.timeout-ms
+
+4. Slaves
+   把每一个从节点的主机名或者ip地址写入etc/hadoop/slaves
+   每行一个, 必须配置ssh信任
+
+5. 机架感知
+   利用机架感知, 减少网络传输, 提高安全性
+
+6. 日志
+   使用Apache log4j, 修改etc/hadoop/log4j.properties修改日志配置
+
+7. 操作集群
+   hdfs和yarn应该分别运行于不同的机器上, 并且使用单独的账户
+
+   格式化文件系统                               hdfs namenode -format
+   启动名称/数据节点/关闭名称/数据节点          start-dfs.sh/stop-dfs.sh
+   启动/关闭yarn                                start-yarn.sh/stop-yarn.sh
+   
 	
+8. NameNode : http://nn_host:50070
+   ResourceManager : http://rm_host:8088
+   MapReduce JobHistory : http://jhs_host:19888
 	
 	
 	
