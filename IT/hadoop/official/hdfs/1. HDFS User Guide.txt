@@ -1,0 +1,138 @@
+1. 概述
+
+   HDFS由一个管理系统元数据的NameNode和存储实际数据的DataNode组成
+   
+   Hadoop, 包括HDFS适合在廉价机器上进行分布式存储和分布式计算.
+   它具有高容错性, 可扩展性. 
+   
+   HDFS具有很强的可配置性, 它的默认配置可以满足大部分的安装, 
+   大多数情况下, 在超大集群中需要调优某些配置.
+   
+   Java语言开发, 主流平台都支持
+   
+   支持命令行
+   
+   NameNode和DataNode自带Web服务器, 方便检查状态
+   
+   HDFS实现的特性
+       1. 文件权限和鉴权
+	   2. 机架感知
+	   3. 安全模式
+	   4. fsck, 检查文件系统健康状况的工具
+	   5. fetchdt: a utility to fetch DelegationToken and store it in a file on the local system
+	   6. 负载均衡
+	   7. 升级和回滚
+	   8. 辅助名称节点: 周期性检查checkpoint
+	   9. 检查点节点
+	   10. 备份节点: 检查点节点的扩展
+	   
+	   
+2. Secondary NameNode 辅助名称节点
+    NameNode在启动时会读取edits日志, 然后将新的状态写入fsimage, 有两个问题
+	1. edits日志会变得很大
+	2. NameNode启动时间会变长
+	
+	Secondary NameNode会周期性的合并fsimage和edits日志文件, 保持edits文件在一定范围内
+	通常情况下, 它应该运行于不同于NameNode的机器, 而且这台机器的内存至少要和NameNode一样多
+	
+	
+	dfs.namenode.checkpoint.period 连续两个检查点的最大时间间隔, 默认一个小时
+	dfs.namenode.checkpoint.txns   名称节点中累积的事务数量,默认为1,000,000也就是说, 即使
+	还没到一个小时, 但已经有1,000,000个操作日志了, 一样需要合并fsimage和edits日志
+	
+	
+	
+3. Checkpoint Node 检查点节点
+
+   Checkpoint Node 周期性的创建namespace的检查点, 它从活跃的NameNode中下载fsimage和edits日志文件
+   然后在本地将其合并, 并将新的fsimage上传给活跃的NameNode
+   
+   检查点节点(或者Backup节点)及其相关的web接口通过以下两个参数配置
+   dfs.namenode.backup.address
+   dfs.namenode.backup.http-address
+   
+   检查点节点在一个目录中存储最新的检查点, 它存储的目录结构与NameNode的存储的目录一样, 
+   使得如果有必要, NameNode可以随时获得检查点镜像
+   
+   可以在配置文件中指定多个检查点
+   
+   
+4. 备份节点(BackupNode) 
+
+   备份节点提供和检查点节点相同的检查点功能, 同时它在内存中维护一份最新的
+   文件系统元数据的副本, 这个副本始终保持与活跃的NameNode一致. 同时它会接受
+   来自NameNode的系统编辑日志的日志流, 并将其持久化到硬盘, 备份节点同时会将
+   这些编辑日志用于它内存中的元数据副本, 从而创建了一个元数据的备份
+
+   备份节点不会下载fsimage和编辑日志. 它的内存中已经有一份最新的元数据的状态
+   备份节点的检查点进程更高效, 因为它只需要将元数据保存到本地fsimage中,并且
+   重置编辑日志
+   
+   内存至少与NameNode一样多
+　 目前同一时刻仅支持一个备份节点, 如果Backup节点已经在使用中, 那么可以不注册Checkpoint节点
+
+   配置
+   dfs.namenode.backup.address
+   dfs.namenode.backup.http-address
+   
+   NameNode可以以无持久化的方式运行, 将所有持久化任务委托给Backup节点, 
+   启动配置是
+   -importCheckpoint
+   同时
+   dfs.namenode.edits.dir配置为无持久化的配置
+   
+5. 导入Checkpoint
+   如果所有的image副本和编辑日志都丢了, 那么可以导入checkpoint
+   1. 创建一个空目录, 使dfs.namenode.name.dir指向它
+   2. 在配置文件中指定dfs.namenode.checkpoint.dir指向检查点目录
+   3. 使用-importCheckpoint选项启动NameNode
+
+6. Balancer存储均衡
+   NameNode存储块时考虑的因素
+   1. 正在写入某块的节点保存一个副本
+   2. 跨机架保存一个副本,防止整个机架挂掉
+   3. 同一机架上另一台机器上保存一份副本, 减轻网络IO
+   4. 在集群中的DataNode上均匀扩展
+   
+   HDFS提供了一个均衡工具
+   
+7. 机架感知
+   集群管理员可以通过配置变量net.topology.script.file.name指定节点属于哪个机架
+   脚本配置好后, 各个节点都会运行它, 决定自己的rack id. 默认的实现是, 所有节点
+   属于同一个机架
+   
+8. 安全模式
+   NameNode启动时, 会读取fsimage和edits日志, 同时它会接受DataNode的报告, 此期间内
+   不能对集群进行写操作, NameNode处于安全模式, 当数据节点报告大部分的文件系统块是
+   可用的时候, 会自动离开安全模式
+   
+   可以通过命令
+   hdfs dfsadmin -safemode
+   显示地打开和关闭安全模式
+   
+9. fsck
+   fsck检查多种一致性问题. 它不会修复它检测到的错误, NameNode会修复大部分它检测到的
+   错误. 默认情况下fsck不会检查打开的文件, 但提供了命令选项实现
+   dfs fsck
+   
+10. fetchdt
+   ----
+   
+
+
+
+
+
+
+
+
+
+
+
+
+   Secondary NameNode不是NameNode的备份。它的作用是：定期合并fsimage与edits文件，并推送给NameNode，以及辅助恢复NameNode。 
+   SNN的作用现在（Hadoop2.x）可以被两个节点替换CheckpointNode和BackupNode。 
+   CheckpointNode可以理解为与Secondary NameNode的作用一致。 
+   BackupNode：NameNode的完全备份。 
+
+   
