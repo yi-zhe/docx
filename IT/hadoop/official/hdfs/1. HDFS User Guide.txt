@@ -118,7 +118,39 @@
 10. fetchdt
    ----
    
-
+11. Recovery Mode
+   NameNode的一种特殊启动方式, 能够恢复大部分数据
+   namenode -recover
+   
+   recover 模式可能会造成数据丢失, 所以使用recover模式前需要备份fsimage和edit日志
+   
+12. 升级与回滚
+   1. 升级前管理员需要删除之前的备份 dfsadmin -finalizeUpgrade
+   2. 停止集群, 升级新版本的Hadoop
+   3. start-dfs.sh -upgrade
+   4. 如果几天后集群仍正常运行, 可以结束升级, 删除DataNode上的备份数据
+   5. 如果需要回滚回旧版本
+      1. 停止集群, 换会旧版本
+	  2. 在名称节点上运行回滚 hdfs namenode -rollback
+	  3. 以rollback模式启动就版本集群 start-dfs.sh -rollback
+	  
+   升级新版本的HDFS, 有必要将保留的路径重命名或者删除
+   可以指定选项 -upgrade -renameReserved .snapshot=.my-snapshot
+   
+   如果可能, 升级前应该执行hdfs dfsadmin -saveNamespace
+   
+13. 数据节点热更新数据
+   1. 如果有新存储, 用户先格式化它并且mount上
+   2. 用户更新数据节点配置dfs.datanode.data.dir 指向将要使用的数据卷目录
+   3. dfsadmin -reconfig datanode host:port start 启动重配置过程
+   4. 重配置结束后, 可以安全的umount磁盘并移走
+   
+14. 文件权限和安全性
+   1. 文件权限的设计和其他Linux系统相似的, 现在的安全性设计局限于文件权限
+      启动HDFS的用户是超级用户, 将来版本的Hadoop会支持网络鉴权协议和数据加密传输
+	  
+15. 扩展性
+   
 
 
 

@@ -1,0 +1,221 @@
+1. 背景
+   1. 防止NameNode机器down机
+   2. 系统软硬件升级
+   
+2. 架构
+   在一个HA架构中, 两台机器配置为NameNode. 在一个特定时间点上, 其中一个节点处于Active状态
+   另一个处于Standby状态, Active节点处理客户端请求, Standby节点作为从节点, 提供快速回复功能
+   
+   Standby为了保持与Active节点的同步状态, 这两种节点都会与一系列称为JournalNodes的隔离的进程
+   保持通信. 当任何对名字空间的修改发生时, 就会把修改在JNs中记录一份, Standby节点从JNs中读取
+   修改, 并将修改提交到自己的名字空间. 如果Active发生故障, Standby会在它成为Active之前从JNs中
+   读取所有修改
+   
+   数据节点会配置成同时向两个Active/Standby节点发生数据块信息和心跳
+   
+   必须保证同一时刻只有一个Active节点, 否则容易造成状态不一致
+   JNs会确保同一时刻只有一个NameNode可以写入
+   
+   
+3. 硬件资源
+   1. NameNode机器: 两台机器的配置要一致
+   2. JournalNode机器: 比较轻量级, 可以和其他Hadoop进程共存, 如NameNode JobTracker Yarn
+      至少要保证3个JN(奇数个)
+	  
+   HA架构中, Standby NameNode也会做检查点, 所以没有必要配置Secondary NameNode/CheckpointNode/BackupNode
+   
+4. 部署
+
+   概览
+   与HDFS Federation一样, HA 集群重用nameservice ID做为一个HDFS实例(可能由两个NameNode组成)的惟一标识, 
+   NameNode ID用于区分不同的NameNode
+   
+   配置详述
+   1. dfs.nameservices 这个名字服务的逻辑名称
+      如果使用了HDFS Federation, 那么其他nameservices也应该包括进来, 用逗号分隔
+	  <property>
+          <name>dfs.nameservices</name>
+          <value>mycluster</value>
+      </property>
+   
+   2. dfs.ha.namenodes.[nameservice ID] 名字服务中, 每一个NameNode的惟一标识
+      用逗号分隔的NameNode Id, 目前最多支持两个
+
+      <property>
+          <name>dfs.ha.namenodes.mycluster</name>
+          <value>nn1,nn2</value>
+      </property>	  
+   
+   3. dfs.namenode.rpc-address.[nameservice ID].[name node ID] 每一个NameNode所在机器和端口
+   
+      <property>
+       <name>dfs.namenode.rpc-address.mycluster.nn1</name>
+       <value>machine1.example.com:8020</value>
+      </property>
+      <property>
+       <name>dfs.namenode.rpc-address.mycluster.nn2</name>
+       <value>machine2.example.com:8020</value>
+      </property>
+	
+	4. dfs.namenode.http-address.[nameservice ID].[name node ID] 每一个NameNode的Web访问地址
+	  
+      <property>
+          <name>dfs.namenode.http-address.mycluster.nn1</name>
+          <value>machine1.example.com:50070</value>
+      </property>
+      <property>
+          <name>dfs.namenode.http-address.mycluster.nn2</name>
+          <value>machine2.example.com:50070</value>
+      </property>
+    
+	5. dfs.namenode.shared.edits.dir JournalNode读写编辑日志的uri
+	   配置为以下形式
+	   qjournal://*host1:port1*;*host2:port2*;*host3:port3*/*journalId*
+	   其中journalId, 是名字服务的惟一标识, 通常复用nameservice Id
+	   
+	   <property>
+           <name>dfs.namenode.shared.edits.dir</name>
+           <value>qjournal://node1.example.com:8485;node2.example.com:8485;node3.example.com:8485/mycluster</value>
+       </property>
+	   
+	6. dfs.client.failover.proxy.provider.[nameservice ID] HDFS客户端用于连接Active NameNode的Java类
+	   目前只有一个实现
+	   <property>
+           <name>dfs.client.failover.proxy.provider.mycluster</name>
+           <value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
+       </property>
+	   
+	   除非自己实现一个自定义的Provide
+	   
+	7. dfs.ha.fencing.methods 用于系统失效主节点切换时隔离Active NameNode的一些列脚本或者Java类
+	   系统失效发生时, 可能前一个NameNode仍在处理RPC请求, 导致数据丢失等问题, 因此需要增加隔离机制
+	   将之前的NameNode杀掉. Hadoop2目前支持两种 1. shell 2. sshfence
+	   1. shell
+	   
+	    <property>
+           <name>dfs.ha.fencing.methods</name>
+           <value>shell(/path/to/my/script.sh arg1 arg2 ...)</value>
+        </property>
+		
+		此shell的执行环境包括了Hadoop的全部环境
+		但是变量名中的"."都换为"_"了
+	   
+	   2. sshfence
+	   <property>
+           <name>dfs.ha.fencing.methods</name>
+           <value>sshfence</value>
+       </property>
+
+       <property>
+          <name>dfs.ha.fencing.ssh.private-key-files</name>
+          <value>/home/exampleuser/.ssh/id_rsa</value>
+       </property>
+	   <property>
+          <name>dfs.ha.fencing.ssh.connect-timeout</name>
+          <value>30000</value>
+       </property>
+	   
+	   	
+    8. fs.defaultFS
+	   <property>
+           <name>fs.defaultFS</name>
+           <value>hdfs://mycluster</value>
+       </property>
+	   
+	9. dfs.journalnode.edits.dir
+	   JournalNode守护进程保存本地状态的路径
+	   
+	   
+	部署详细
+	1. 使用 hadoop-daemon.sh start journalnode 启动JournalNode
+	2. 同步两个NameNode的元数据
+	   1. 如果是新配置的HDFS集群, 格式化其中一个NameNode hdfs namenode -format
+	   2. 如果已经格式化过或者是启用集群的HA功能, 那么将当前NameNode的元数据拷贝到另一个NameNode
+	      通过执行命令 hdfs namenode -bootstrapStandby
+		  
+	   3. 如果是将非HA NameNode转为HA, 执行hdfs namenode -initializeSharedEdits 初始化JournalNode
+	   
+	   
+	管理命令
+	1. hdfs haadmin commands
+	   1. transitionToActive transitionToStandby 切换状态 ,　尽量不用
+	   2. failover 初始化一个系统失败错误
+	   3. getServiceState 查看NameNode是Active还是Standby
+	   4. checkHealth 检查给定NameNode的健康状态 还未实现
+	   
+	   
+	自动故障处理
+	1. 简介
+	2. 组件
+	   1. ZooKeeper quorum
+	   2. ZKFailoverController ZKFC
+	   
+	   ZooKeeper 维护相关的数据, 通知客户端数据的变化, 并且检测客户端失效
+	   它依赖以下
+	   1. 失效检测
+	   2. Active NameNode选举
+	   
+	   ZKFC的职责
+	   1. 健康检查
+	       使用健康检查命令周期性检查本地NameNode
+	   2. ZooKeeper会话管理
+	       普通NameNode 一个session
+		   Active NameNode zlock
+	   3. 基于ZooKeeper的选举
+	      ActiveNameNode故障后, 如果本地NameNode是健康的, 那么ZKFC会尝试获得zlock
+		  成功后, 就会将本地NameNode变为Active状态
+		  
+	3. 部署ZooKeeper
+	   通常情况下, 会部署3个或者5个ZooKeeper进程, 因为比较轻量级, 所以可以和NameNode一起部署
+	   第三个ZooKeeper进程部署在YARN Resource Manager上, 建议ZooKeeper的数据存储在单独的磁盘上
+	   不要和HDFS元数据共享
+	   
+	   开始之前
+	   关闭集群
+	   
+	   配置自动故障恢复
+	   1. hdfs-site.xml
+	      <property>
+              <name>dfs.ha.automatic-failover.enabled[.serviceId]</name>
+              <value>true</value>
+          </property>
+		  
+	   2. core-site.xml ZooKeeper进程列表
+	      <property>
+             <name>ha.zookeeper.quorum</name>
+             <value>zk1.example.com:2181,zk2.example.com:2181,zk3.example.com:2181</value>
+          </property>
+	
+	4. ZooKeeper中初始化HA状态
+	   hdfs zkfc -formatZK
+	   
+	5. 启动集群
+	   start-dfs.sh 它会自动启动ZooKeeper并且选举一个ActiveNode
+	   
+	   手动启动集群(在每个ZooKeeper节点上)
+	   hadoop-daemon.sh --script $HADOOP_HOME/bin/hdfs start zkfc
+	   
+	6. 安全访问ZooKeeper
+	   core-site.xml
+	   
+	   <property>
+           <name>ha.zookeeper.auth</name>
+           <value>@/path/to/zk-auth.txt</value>
+       </property>
+       <property>
+           <name>ha.zookeeper.acl</name>
+           <value>@/path/to/zk-acl.txt</value>
+       </property>
+	   
+	   @表示这是执行磁盘的一个路径
+	   
+	   ...
+	   
+	7. 验证
+	
+	8. HA升级
+	   1. 关闭NN, 升级Hadoop
+	   2. 启动所有的JournalNode(必须是所有)
+	   3. 启动一个NN以-upgrade参数
+	   4. 该NN直接进入Active模式 执行升级 修改edits
+	   5. 以-bootstrapStandby启动另一个NN
