@@ -1,0 +1,135 @@
+1. 背景
+
+   HDFS 有两个主要的层级
+   1. 名字空间
+      由目录文件和块组成
+	  支持所有文件系统相关的操作如创建/删除/修改文件等
+
+   2. 块存储服务
+      块管理(在NameNode中)
+	      通过注册和心跳提供数据节点集群关系的维护
+		  处理块报告并维护块的位置
+		  支持块的操作, 创建/删除/修改获取块位置等
+		  处理副本放置
+	  
+	  存储
+	      DataNode存储
+		  
+    HDFS Feration 提供多NameNode支持
+	
+2. 多名字节点/多名字空间
+   为了水平扩展名字服务, Federation使用多个独立的名字节点/名字空间
+   
+   NameNode是联合起来的, 但是又是相互独立的, 不需要彼此协作.
+   
+   可以使用ViewFs创建个人的名字空间视图
+   
+   Block Pool
+   Block Pool是属于一个namespace的一系列Block
+   
+   名字空间及其所有的Block pool一起称为Namespace Volume
+   
+   ClusterId
+   识别集群中所有的节点, 格式化NameNode时候, ID是人为提供的或者是自动
+   生成的, 集群中增加新的NameNode时候, 需要使用此ClusterId格式化NameNode
+   
+   主要的好处
+   1. Namespace水平扩展能力
+   2. 性能提升
+   3. 名字空间隔离
+   
+3. Federation配置
+   是向后兼容的, Federation增加了NameServiceId的抽象, 名字节点和它相关的
+   secondary/backup/checkpoint 节点属于同一个NameServiceId
+   
+   配置
+   1. dfs.nameservices 配置多个NameServiceId, 逗号分隔
+   2. 配置以下信息
+   
+      Namenode	            dfs.namenode.rpc-address 
+                            dfs.namenode.servicerpc-address 
+                            dfs.namenode.http-address 
+                            dfs.namenode.https-address 
+                            dfs.namenode.keytab.file 
+                            dfs.namenode.name.dir 
+                            dfs.namenode.edits.dir 
+                            dfs.namenode.checkpoint.dir 
+                            dfs.namenode.checkpoint.edits.dir
+      Secondary Namenode	dfs.namenode.secondary.http-address 
+                            dfs.secondary.namenode.keytab.file
+      BackupNode	        dfs.namenode.backup.address 
+                            dfs.secondary.namenode.keytab.file
+
+      e.g.
+	  
+	  
+	  <configuration>
+          <property>
+              <name>dfs.nameservices</name>
+              <value>ns1,ns2</value>
+          </property>
+          <property>
+              <name>dfs.namenode.rpc-address.ns1</name>
+              <value>nn-host1:rpc-port</value>
+          </property>
+          <property>
+              <name>dfs.namenode.http-address.ns1</name>
+              <value>nn-host1:http-port</value>
+          </property>
+          <property>
+              <name>dfs.namenode.secondaryhttp-address.ns1</name>
+              <value>snn-host1:http-port</value>
+          </property>
+          <property>
+              <name>dfs.namenode.rpc-address.ns2</name>
+              <value>nn-host2:rpc-port</value>
+          </property>
+          <property>
+              <name>dfs.namenode.http-address.ns2</name>
+              <value>nn-host2:http-port</value>
+          </property>
+          <property>
+              <name>dfs.namenode.secondaryhttp-address.ns2</name>
+              <value>snn-host2:http-port</value>
+           </property>
+
+         .... Other common configuration ...
+       </configuration>
+	   
+	   
+	   1. 格式化名字节点
+	   hdfs namenode -format [ -clusterId <id> ]
+	   
+	   2. 格式化其他名字节点
+	   hdfs namenode -format -clusterId <cluster_id>
+	   
+	   3. 从旧版本升级并配置Federation
+	   hdfs start namenode --config $HADOOP_CONF_DIR  -upgrade -clusterId <cluster_ID>
+	   
+	   
+	   
+	   
+	   向已有集群中增加新的NameNode
+	   1. 增加dfs.nameservices配置
+	   2. 更新配置以NameServiceId为结尾
+	   3. 配置文件中增加新的NameNode相关的配置
+	   4. 分发配置文件到其他机器
+	   5. 重启新的NameNode和Secondary/Backup
+	   6. 对集群中所有DataNode执行
+	   hdfs dfsadmin -refreshNameNodes <datanode_host_name>:<datanode_rpc_port>
+	   
+	   
+	   管理集群
+	   1. 停止/启动集群
+	      stop-dfs.sh / start-dfs.sh
+		  
+	   2. Balancer
+	      hadoop-daemon.sh start balancer [-policy <policy>]
+		  policy : datanode/blockpool
+	   
+	   退役
+	   1. 配置exclude文件, 每行一个要退役的NameNode机器
+	      distribute-exclude.sh <exclude_file>
+	   2. 刷新节点
+	      refresh-namenodes.sh
+	   
