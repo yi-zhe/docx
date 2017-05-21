@@ -1,0 +1,60 @@
+1. 概述
+   HDFS 快照是文件系统某一个时间点的只读拷贝
+   可以为整个文件系统生成快照, 也可以只为某个子目录生成快照
+   用例: 1 数据备份, 2. 防止用户错误 3. 灾难恢复
+   
+   快照的实现很快
+   1. 除了inode查找时间, 复杂度为O(1)
+   2. 对快照进行操作需要额外的内存, 空间复杂度O(M)
+      M 是修改文件或文件夹的数量
+	  
+   3. DataNode中的Block不会被拷贝
+   4. 快照不影响HDFS操作, 快照数据根据当前数据和操作历史做减法计算出
+   
+   I 可以被快照的目录
+   
+   快照可以在任何标记为snapshottable的目录上生成. 快照会放入snapshottable目录中
+   此目录最多含有65536个快照. 包含snapshottable的目录不能被重命名, 也不能被删除
+   
+   不允许嵌套的snapshottable目录存在, 也就是如果一个目录的父/子目录是snapshottable的
+   那么它不能成为snapshottable
+   
+   II 快照的目录
+   
+   对于一个可快照目录, 可以通过.snapshottable的访问它的快照,
+   e.g. 如果/foo是一个可快照的目录, 并且它有一个快照s0, 那么访问/foo/bar
+   可以使用如下形式 /foo/.snapshot/s0/bar
+   
+   API CLI
+   1. 列出所有快照
+      hdfs dfs -ls /foo/.snapshot
+   2. 列出快照s0下的所有文件
+      hdfs dfs -ls /foo/.snapshot/s0
+	  
+   3. 从s0拷贝一个文件
+      hdfs dfs -cp /foo/.snapshot/s0/bar /tmp
+	  
+2. 快照操作
+   1. 管理员操作
+      允许快照
+	  hdfs dfsadmin -allowSnapshot path
+	  
+	  禁止快照
+	  hdfs dfsadmin -disallowSnapshot path
+	  
+   2. 用户操作
+      创建快照
+	  hdfs dfs -createSnapshot <path> snapshotName
+	  
+	  删除快照
+	  hdfs dfs -deleteSnapshot <path> <snapshotName>
+	  
+	  重命名快照
+	  hdfs dfs -renameSnapshot <path> <oldName> <newName>
+	  
+	  可快照目录列表
+	  hdfs lsSnapshottableDir
+	  
+	  获取快照差异
+	  hdfs snapshotDiff <path> <fromSnapshot> <toSnapshot>
+	  

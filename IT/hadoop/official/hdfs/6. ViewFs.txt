@@ -1,0 +1,44 @@
+1. 介绍
+   View File System 提供了操作多Hadoop名字空间的方法, 尤其对有多个NameNode的集群有用
+   
+   
+2. 旧的(在Federation之前)
+
+   如果有多个集群, 每个集群的名字空间是相互独立的, 物理存储是无法共享的
+   
+   1. 路径名
+      如果core-site.xml配置为
+	  <property>
+          <name>fs.default.name</name>
+          <value>hdfs://namenodeOfClusterX:port</value>
+      </property>
+	  
+	  1. /foo/bar
+	     与hdfs://namenodeOfClusterX:port/foo/bar是等价的
+		 
+      2. hdfs://namenodeOfClusterX:port/foo/bar
+	     是个合法的名字, 并且比1中描述的更好
+		 
+	  3. hdfs://namenodeOfClusterY:port/foo/bar
+	     描述clusterY中的一个资源的Uri
+		 
+	  4. webhdfs://namenodeClusterX:http_port/foo/bar and hftp://namenodeClusterX:http_port/foo/bar
+	     通过WebHDFS和HFTP文件系统访问文件的Uri
+		 
+	  5. http://namenodeClusterX:http_port/webhdfs/v1/foo/bar and http://proxyClusterX:http_port/foo/bar
+	     通过WebHDFS REST API访问文件的HTTP URL
+	  
+	路径使用最佳实践
+	  当在集群中时, 建议使用第1种方式, 全限定名的URI和地址一样, 不能允许应用程序
+	  
+3. 新的Federation与ViewFs
+   为了提供一个与旧的透明的, 客户端的mount table与Unix的mount table与Unix的mount一致, 将新的名字空间使用旧的
+   命名方式.
+   
+   配置
+   <property>
+       <name>fs.default.name</name>
+      <value>viewfs://clusterX</value>
+   </property>
+   
+   。。。待续
