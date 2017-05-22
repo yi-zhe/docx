@@ -1,0 +1,39 @@
+1. 概述
+   Offline Image Viewer将hdfs镜像文件的内容转化成可读的格式, 方便对namespace
+   进行离线分析
+   
+   几种输出处理器
+   1. Web
+      默认的, 暴露一些只读的WebHDFS API
+	  
+   2. xml
+      到处fsimage中的所有信息, 输出的xml可被xml工具处理, 
+	  几种输出比较, 会产生最大量的输出
+	  
+   3. FileDistribution
+      。。。
+	  
+   4. Delimited 默认用\t分隔的文本文件
+   
+   
+2. 使用
+    1. Web
+    hdfs oiv -i fsimage
+   
+    浏览器 localhost:5978
+   
+    命令 hdfs dfs -ls webhdfs://127.0.0.1:5978
+         hdfs dfs -ls -R webhdfs://127.0.0.1:5978
+		
+    webapi
+	    curl -i http://127.0.0.1:5978/webhdfs/v1/?op=liststatus
+		
+    2. xml
+    hdfs oiv -p XML -i fsimage -o fsimage.xml
+	
+	
+	
+	oiv_legacy 
+	配置dfs.namenode.legacy-oiv-image.dir
+	当NameNode保存检查点时,  会按照旧版本的布局保存
+	hdfs oiv_legacy -i fsimage_old -o output
