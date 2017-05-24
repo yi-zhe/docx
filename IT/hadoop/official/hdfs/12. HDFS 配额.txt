@@ -1,0 +1,28 @@
+1. 概述
+   HDFS允许管理员配置一个目录下最多多少个文件, 也可以设置一个目录使用的最大空间
+   名字配额和空间配额是相互独立的
+   
+2. 名字配额
+   命名配额是一个在某个文件夹下文件和文件夹的数目, 如果超过配额限制, 创建文件或目录就会失败
+   如果重命名时引起配额冲突, 重命名也会失败
+   为目录设置新的配额时，即使现在的目录状态违反新的配额限制，操作仍然成功。
+   一个新创建的目录没有配额限制。配额的最大值是Long.Max_Value。
+   一个目录的配额是1会强制一个目录保持空(它本身会占用自己的配额)
+   
+3. 空间配额
+   空间配额是关于目录树上一个子目录数下的文件大小的硬限制
+   如果一个目录所剩的配额不够一个Block的大小，Block申请失败。
+   每一个Block的副本都会计算到配额中。配额会与重命名的目录保持联系，
+   如果重命名操作导致违反配额限制，操作将会失败。一个新创建的目录不被分配配额。
+   最大的配额值时Long.Max_Value。配额为0仍然允许文件被创建，但是这个文件不会有Block。
+   目录不使用主机文件系统空间，不计算在空间配额中。（空间配额----Block）。
+   改变一个文件的副本因子将会归还或者占用配额
+   
+4. 管理命令
+   设置文件数配额     hdfs dfsadmin -setQuota <N> <directory>...<directory>
+   清除文件数配额     hdfs dfsadmin -clrQuota <directory>...<directory>
+   设置目录空间配额   hdfs dfsadmin -setSpaceQuota <N> <directory>...<directory>
+   清除目录空间配额   hdfs dfsadmin -clrSpaceQuota <N> <directory>...<directory>
+   
+5. 报告
+   hadoop fs -count -q [-h] [-v] <directory>...<directory>
